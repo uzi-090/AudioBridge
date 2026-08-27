@@ -77,4 +77,3 @@ The detailed packet contract is in [protocol/README.md](protocol/README.md).
 ## Premium roadmap
 
 A more polished second version is feasible. High-value upgrades are automatic discovery and QR pairing, adaptive jitter buffering, Opus compression, authenticated encryption, clock-drift correction, interruption/reconnect handling, selectable Windows output devices, and measured round-trip latency. A separate browser extension or compatible video player could delay video to match audio; Netflix cannot be universally synchronized from an ordinary sender app.
-

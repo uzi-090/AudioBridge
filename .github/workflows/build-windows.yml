@@ -1,0 +1,51 @@
+name: Build Windows sender
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "windows/**"
+      - "scripts/build-windows.ps1"
+      - ".github/workflows/build-windows.yml"
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore windows/AudioBridge.sln
+
+      - name: Build
+        run: dotnet build windows/AudioBridge.sln --configuration Release --no-restore
+
+      - name: Test protocol
+        run: dotnet test windows/AudioBridge.Protocol.Tests/AudioBridge.Protocol.Tests.csproj --configuration Release --no-build
+
+      - name: Publish self-contained sender
+        run: >-
+          dotnet publish windows/AudioBridge.Sender/AudioBridge.Sender.csproj
+          --configuration Release
+          --runtime win-x64
+          --self-contained true
+          --output artifacts/windows-x64
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+
+      - name: Upload sender
+        uses: actions/upload-artifact@v4
+        with:
+          name: AudioBridge-Windows-x64
+          path: artifacts/windows-x64/**
+          if-no-files-found: error
+          retention-days: 14

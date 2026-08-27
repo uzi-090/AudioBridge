@@ -1,0 +1,62 @@
+name: AudioBridgeReceiver
+
+options:
+  bundleIdPrefix: com.audiobridge
+  createIntermediateGroups: true
+  deploymentTarget:
+    iOS: "16.0"
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    IPHONEOS_DEPLOYMENT_TARGET: "16.0"
+    TARGETED_DEVICE_FAMILY: "1"
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+
+targets:
+  AudioBridgeReceiver:
+    type: application
+    platform: iOS
+    sources:
+      - path: AudioBridgeReceiver
+        excludes:
+          - Info.plist
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.audiobridge.receiver
+        PRODUCT_NAME: AudioBridge
+        INFOPLIST_FILE: AudioBridgeReceiver/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        CODE_SIGN_STYLE: Automatic
+        CURRENT_PROJECT_VERSION: "1"
+        MARKETING_VERSION: "0.1.0"
+        ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: YES
+
+  AudioBridgeReceiverTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: AudioBridgeReceiverTests
+    dependencies:
+      - target: AudioBridgeReceiver
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.audiobridge.receiver.tests
+        GENERATE_INFOPLIST_FILE: YES
+
+schemes:
+  AudioBridgeReceiver:
+    build:
+      targets:
+        AudioBridgeReceiver: all
+        AudioBridgeReceiverTests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      gatherCoverageData: true
+      targets:
+        - AudioBridgeReceiverTests
+    archive:
+      config: Release
+

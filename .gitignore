@@ -1,0 +1,12 @@
+.DS_Store
+.build/
+DerivedData/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+ios/AudioBridgeReceiver.xcodeproj/
+windows/**/bin/
+windows/**/obj/
+artifacts/
+*.ipa
+*.zip
+

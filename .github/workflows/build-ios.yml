@@ -1,0 +1,90 @@
+name: Build iPhone app
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "ios/**"
+      - "scripts/build-ios.sh"
+      - ".github/workflows/build-ios.yml"
+
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: ios
+        run: xcodegen generate --spec project.yml
+
+      - name: Choose an iPhone simulator
+        id: simulator
+        shell: bash
+        run: |
+          simulator_id=$(python3 - <<'PY'
+          import json
+          import subprocess
+
+          devices = json.loads(subprocess.check_output(
+              ["xcrun", "simctl", "list", "devices", "available", "-j"],
+              text=True,
+          ))["devices"]
+          for runtime in sorted(devices, reverse=True):
+              for device in devices[runtime]:
+                  if device.get("isAvailable") and device.get("name", "").startswith("iPhone"):
+                      print(device["udid"])
+                      raise SystemExit(0)
+          raise SystemExit("No available iPhone simulator was found")
+          PY
+          )
+          echo "id=$simulator_id" >> "$GITHUB_OUTPUT"
+
+      - name: Run iOS unit tests
+        run: |
+          xcodebuild \
+            -project ios/AudioBridgeReceiver.xcodeproj \
+            -scheme AudioBridgeReceiver \
+            -configuration Debug \
+            -destination "platform=iOS Simulator,id=${{ steps.simulator.outputs.id }}" \
+            -derivedDataPath artifacts/ios-tests \
+            CODE_SIGNING_ALLOWED=NO \
+            test
+
+      - name: Build unsigned device app
+        run: |
+          xcodebuild \
+            -project ios/AudioBridgeReceiver.xcodeproj \
+            -scheme AudioBridgeReceiver \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath artifacts/ios-device \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            build
+
+      - name: Package unsigned IPA
+        shell: bash
+        run: |
+          app_path="artifacts/ios-device/Build/Products/Release-iphoneos/AudioBridge.app"
+          test -d "$app_path"
+          mkdir -p artifacts/ios-package/Payload
+          ditto "$app_path" artifacts/ios-package/Payload/AudioBridge.app
+          cd artifacts/ios-package
+          zip -qry ../AudioBridge-unsigned.ipa Payload
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: AudioBridge-iPhone-unsigned
+          path: artifacts/AudioBridge-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 14

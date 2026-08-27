@@ -1,0 +1,34 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioBridge.Protocol", "AudioBridge.Protocol\AudioBridge.Protocol.csproj", "{B015FB4A-943D-42BC-8DEB-3FB2A5C988AF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioBridge.Sender", "AudioBridge.Sender\AudioBridge.Sender.csproj", "{0E2E2652-739B-4BCC-8427-49614071DF19}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioBridge.Protocol.Tests", "AudioBridge.Protocol.Tests\AudioBridge.Protocol.Tests.csproj", "{D994D5D5-2344-4080-B270-B21E0F4D2728}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B015FB4A-943D-42BC-8DEB-3FB2A5C988AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B015FB4A-943D-42BC-8DEB-3FB2A5C988AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B015FB4A-943D-42BC-8DEB-3FB2A5C988AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B015FB4A-943D-42BC-8DEB-3FB2A5C988AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E2E2652-739B-4BCC-8427-49614071DF19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E2E2652-739B-4BCC-8427-49614071DF19}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E2E2652-739B-4BCC-8427-49614071DF19}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E2E2652-739B-4BCC-8427-49614071DF19}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D994D5D5-2344-4080-B270-B21E0F4D2728}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D994D5D5-2344-4080-B270-B21E0F4D2728}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D994D5D5-2344-4080-B270-B21E0F4D2728}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D994D5D5-2344-4080-B270-B21E0F4D2728}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

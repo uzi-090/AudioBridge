@@ -1,0 +1,198 @@
+<Window x:Class="AudioBridge.Sender.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:automation="clr-namespace:System.Windows.Automation;assembly=PresentationCore"
+        Title="AudioBridge Sender"
+        Width="1050"
+        Height="760"
+        MinWidth="880"
+        MinHeight="650"
+        WindowStartupLocation="CenterScreen">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <Grid Margin="34">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="26" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock FontSize="30" FontWeight="Bold" Text="AudioBridge" />
+                    <TextBlock Margin="0,6,0,0"
+                               Style="{StaticResource SecondaryText}"
+                               Text="Send Windows audio to your iPhone over the local Wi-Fi network." />
+                </StackPanel>
+                <Border Grid.Column="1"
+                        Padding="14,9"
+                        Background="{StaticResource SurfaceBrush}"
+                        CornerRadius="20"
+                        VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <Ellipse x:Name="HeaderStatusDot" Width="9" Height="9" Fill="{StaticResource TextSecondaryBrush}" Margin="0,0,9,0" />
+                        <TextBlock x:Name="HeaderStatusText" FontWeight="SemiBold" Text="Waiting for iPhone" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="46*" />
+                    <ColumnDefinition Width="22" />
+                    <ColumnDefinition Width="54*" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource SectionTitle}" Text="Connect your iPhone" />
+                            <TextBlock Style="{StaticResource SecondaryText}"
+                                       Text="Enter these details in the iPhone app. Both devices must be on the same Wi-Fi." />
+
+                            <Border Margin="0,20,0,0" Padding="18" Background="{StaticResource SurfaceBrush}" CornerRadius="14">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource SecondaryText}" Text="PAIRING CODE" />
+                                    <TextBlock x:Name="PairingCodeText"
+                                               Margin="0,4,0,0"
+                                               FontFamily="Cascadia Mono, Consolas"
+                                               FontSize="36"
+                                               FontWeight="Bold"
+                                               Text="------" />
+                                </StackPanel>
+                            </Border>
+
+                            <Grid Margin="0,16,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="12" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Border Padding="14" Background="{StaticResource SurfaceBrush}" CornerRadius="12">
+                                    <StackPanel>
+                                        <TextBlock Style="{StaticResource SecondaryText}" Text="WINDOWS ADDRESS" />
+                                        <TextBlock x:Name="AddressText" Margin="0,4,0,0" FontFamily="Cascadia Mono, Consolas" FontSize="16" Text="Detecting…" />
+                                    </StackPanel>
+                                </Border>
+                                <Border Grid.Column="2" Padding="14" Background="{StaticResource SurfaceBrush}" CornerRadius="12">
+                                    <StackPanel>
+                                        <TextBlock Style="{StaticResource SecondaryText}" Text="PORT" />
+                                        <TextBlock x:Name="PortText" Margin="0,4,0,0" FontFamily="Cascadia Mono, Consolas" FontSize="16" Text="43120" />
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+
+                            <Grid Margin="0,16,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="12" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Button x:Name="CopyDetailsButton"
+                                        Style="{StaticResource PrimaryButton}"
+                                        automation:AutomationProperties.Name="Copy connection details"
+                                        Click="CopyDetailsButton_OnClick"
+                                        Content="Copy details" />
+                                <Button x:Name="NewCodeButton"
+                                        Grid.Column="2"
+                                        Style="{StaticResource SecondaryButton}"
+                                        automation:AutomationProperties.Name="Create new pairing code"
+                                        Click="NewCodeButton_OnClick"
+                                        Content="New code" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Margin="0,18,0,0" Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource SectionTitle}" Text="Connection" />
+                            <TextBlock x:Name="ConnectionStatusText" FontSize="16" FontWeight="SemiBold" Text="No iPhone connected" />
+                            <TextBlock x:Name="ConnectionDetailText"
+                                       Margin="0,6,0,0"
+                                       Style="{StaticResource SecondaryText}"
+                                       Text="Start the iPhone app and enter the details above." />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2">
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource SectionTitle}" Text="Choose audio" />
+                            <TextBlock Style="{StaticResource SecondaryText}"
+                                       Text="Use the test tone first. Then switch to system audio for video and music." />
+
+                            <Button x:Name="TestToneButton"
+                                    Margin="0,20,0,0"
+                                    Style="{StaticResource PrimaryButton}"
+                                    automation:AutomationProperties.Name="Start test tone"
+                                    Click="TestToneButton_OnClick"
+                                    Content="Start test tone" />
+                            <Button x:Name="SystemAudioButton"
+                                    Margin="0,12,0,0"
+                                    Style="{StaticResource SecondaryButton}"
+                                    automation:AutomationProperties.Name="Stream Windows system audio"
+                                    Click="SystemAudioButton_OnClick"
+                                    Content="Stream system audio" />
+                            <Button x:Name="StopButton"
+                                    Margin="0,12,0,0"
+                                    Style="{StaticResource DangerButton}"
+                                    automation:AutomationProperties.Name="Stop audio streaming"
+                                    Click="StopButton_OnClick"
+                                    Content="Stop streaming"
+                                    IsEnabled="False" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Margin="0,18,0,0" Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource SectionTitle}" Text="Live stream" />
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource SecondaryText}" Text="SOURCE" />
+                                    <TextBlock x:Name="SourceText" Margin="0,5,0,0" FontWeight="SemiBold" Text="Stopped" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Style="{StaticResource SecondaryText}" Text="PACKETS" />
+                                    <TextBlock x:Name="PacketsText" Margin="0,5,0,0" FontWeight="SemiBold" Text="0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Style="{StaticResource SecondaryText}" Text="SENT" />
+                                    <TextBlock x:Name="BytesText" Margin="0,5,0,0" FontWeight="SemiBold" Text="0 KB" />
+                                </StackPanel>
+                            </Grid>
+                            <TextBlock Margin="0,20,0,7" Style="{StaticResource SecondaryText}" Text="AUDIO LEVEL" />
+                            <ProgressBar x:Name="PeakMeter"
+                                         Height="10"
+                                         Maximum="1"
+                                         Foreground="{StaticResource AccentBrush}"
+                                         Background="{StaticResource SurfaceBrush}" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Margin="0,18,0,0" Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource SectionTitle}" Text="Event log" />
+                            <ListBox x:Name="LogList"
+                                     Height="138"
+                                     BorderThickness="0"
+                                     Background="Transparent"
+                                     Foreground="{StaticResource TextSecondaryBrush}"
+                                     FontFamily="Cascadia Mono, Consolas"
+                                     FontSize="12"
+                                     IsTabStop="False" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </ScrollViewer>
+</Window>
