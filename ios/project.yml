@@ -43,6 +43,8 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.audiobridge.receiver.tests
         GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/AudioBridge.app/AudioBridge"
+        BUNDLE_LOADER: "$(TEST_HOST)"
 
 schemes:
   AudioBridgeReceiver:
