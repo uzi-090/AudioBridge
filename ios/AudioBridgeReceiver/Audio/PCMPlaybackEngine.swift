@@ -20,6 +20,8 @@ final class PCMPlaybackEngine {
     private let audioSession: AudioSessionController
     private let format: AVAudioFormat
     private var isConfigured = false
+    private var scheduledBufferCount = 0
+    private var playbackGeneration: UInt64 = 0
 
     init(audioSession: AudioSessionController) throws {
         self.audioSession = audioSession
@@ -74,18 +76,33 @@ final class PCMPlaybackEngine {
                 }
             }
 
-            self.playerNode.scheduleBuffer(buffer)
+            self.scheduledBufferCount += 1
+            let generation = self.playbackGeneration
+            self.playerNode.scheduleBuffer(buffer) { [weak self] in
+                self?.queue.async { [weak self] in
+                    guard let self, self.playbackGeneration == generation else { return }
+                    self.scheduledBufferCount = max(0, self.scheduledBufferCount - 1)
+                }
+            }
             if !self.playerNode.isPlaying {
                 self.playerNode.play()
             }
         }
     }
 
+    func needsRecovery(maxScheduledBuffers: Int) -> Bool {
+        queue.sync {
+            guard isConfigured else { return false }
+            return scheduledBufferCount > maxScheduledBuffers
+                || (scheduledBufferCount > 0 && !playerNode.isPlaying)
+        }
+    }
+
     func stop() {
         queue.sync {
-            if playerNode.isPlaying {
-                playerNode.stop()
-            }
+            playbackGeneration &+= 1
+            scheduledBufferCount = 0
+            playerNode.stop()
             if engine.isRunning {
                 engine.stop()
             }
@@ -98,4 +115,3 @@ final class PCMPlaybackEngine {
         }
     }
 }
-
