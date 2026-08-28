@@ -33,6 +33,16 @@ final class ReceiverService {
         audioSession.onRouteChanged = { [weak self] routeName in
             self?.notifyRoute(routeName)
         }
+        audioSession.onInterruptionEnded = { [weak self] in
+            self?.networkQueue.async {
+                self?.rebuildPlaybackEngine(reason: "Audio interruption ended; playback recovered automatically.")
+            }
+        }
+        audioSession.onMediaServicesReset = { [weak self] in
+            self?.networkQueue.async {
+                self?.rebuildPlaybackEngine(reason: "iOS audio services restarted; playback recovered automatically.")
+            }
+        }
     }
 
     func connect(configuration: ReceiverConfiguration) {
@@ -164,10 +174,7 @@ final class ReceiverService {
         guard !hasAcknowledgement else { return }
         hasAcknowledgement = true
         do {
-            let engine = try PCMPlaybackEngine(audioSession: audioSession)
-            try engine.start()
-            playbackEngine = engine
-            notifyRoute(audioSession.currentRouteName)
+            try startPlaybackEngine()
             notifyState(.waitingForAudio)
             log("Pairing accepted. Audio output is ready.")
         } catch {
@@ -252,8 +259,19 @@ final class ReceiverService {
     }
 
     private func publishMetrics() {
+        let packetsThisSecond = packetsInCurrentSecond
+        let recoveryThreshold = max(
+            50,
+            (configuration?.bufferPreset.targetPacketCount ?? BufferPreset.balanced.targetPacketCount) * 8
+        )
+        if packetsThisSecond > 0,
+           hasPlayedAudio,
+           playbackEngine?.needsRecovery(maxScheduledBuffers: recoveryThreshold) == true {
+            rebuildPlaybackEngine(reason: "Playback stalled; AudioBridge recovered automatically.")
+        }
+
         let snapshot = jitterBuffer.snapshot()
-        metrics.packetsPerSecond = packetsInCurrentSecond
+        metrics.packetsPerSecond = packetsThisSecond
         metrics.packetsDropped = snapshot.droppedPackets
         metrics.packetsReordered = snapshot.reorderedPackets
         metrics.bufferDepth = snapshot.depth
@@ -266,6 +284,31 @@ final class ReceiverService {
         let metrics = metrics
         DispatchQueue.main.async { [weak self] in
             self?.delegate?.receiverServiceDidUpdateMetrics(metrics)
+        }
+    }
+
+    private func startPlaybackEngine() throws {
+        let engine = try PCMPlaybackEngine(audioSession: audioSession)
+        try engine.start()
+        playbackEngine = engine
+        notifyRoute(audioSession.currentRouteName)
+    }
+
+    private func rebuildPlaybackEngine(reason: String) {
+        guard hasAcknowledgement, playbackEngine != nil else { return }
+
+        playbackEngine?.stop()
+        playbackEngine = nil
+        jitterBuffer.reset()
+        pendingPlaybackData.removeAll(keepingCapacity: true)
+        hasPlayedAudio = false
+
+        do {
+            try startPlaybackEngine()
+            notifyState(.waitingForAudio)
+            log(reason)
+        } catch {
+            fail("The iPhone audio engine could not recover: \(error.localizedDescription)")
         }
     }
 
