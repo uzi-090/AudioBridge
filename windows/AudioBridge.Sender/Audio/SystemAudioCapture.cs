@@ -1,6 +1,7 @@
 using AudioBridge.Protocol;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
 
 namespace AudioBridge.Sender.Audio;
 
@@ -9,7 +10,7 @@ public sealed class SystemAudioCapture : IAsyncDisposable
     private readonly object _sync = new();
     private WasapiLoopbackCapture? _capture;
     private BufferedWaveProvider? _buffer;
-    private MediaFoundationResampler? _resampler;
+    private IWaveProvider? _outputProvider;
     private CancellationTokenSource? _lifetime;
     private Task? _pumpTask;
 
@@ -30,12 +31,18 @@ public sealed class SystemAudioCapture : IAsyncDisposable
             DiscardOnBufferOverflow = true,
             ReadFully = false,
         };
-        _resampler = new MediaFoundationResampler(
-            _buffer,
-            new WaveFormat(ProtocolConstants.SampleRate, 16, ProtocolConstants.ChannelCount))
+        ISampleProvider samples = _buffer.ToSampleProvider();
+        if (samples.WaveFormat.Channels != ProtocolConstants.ChannelCount)
         {
-            ResamplerQuality = 30,
-        };
+            samples = new StereoChannelSampleProvider(samples);
+        }
+
+        if (samples.WaveFormat.SampleRate != ProtocolConstants.SampleRate)
+        {
+            samples = new WdlResamplingSampleProvider(samples, ProtocolConstants.SampleRate);
+        }
+
+        _outputProvider = new SampleToWaveProvider16(samples);
 
         _capture.DataAvailable += CaptureOnDataAvailable;
         _capture.RecordingStopped += CaptureOnRecordingStopped;
@@ -72,7 +79,7 @@ public sealed class SystemAudioCapture : IAsyncDisposable
                 int read;
                 lock (_sync)
                 {
-                    read = _resampler?.Read(frame, filled, frame.Length - filled) ?? 0;
+                    read = _outputProvider?.Read(frame, filled, frame.Length - filled) ?? 0;
                 }
 
                 if (read == 0)
@@ -125,15 +132,64 @@ public sealed class SystemAudioCapture : IAsyncDisposable
 
         _capture.DataAvailable -= CaptureOnDataAvailable;
         _capture.RecordingStopped -= CaptureOnRecordingStopped;
-        _resampler?.Dispose();
         _capture.Dispose();
         _lifetime?.Dispose();
         _capture = null;
         _buffer = null;
-        _resampler = null;
+        _outputProvider = null;
         _lifetime = null;
         _pumpTask = null;
     }
 
     public async ValueTask DisposeAsync() => await StopAsync().ConfigureAwait(false);
+
+    private sealed class StereoChannelSampleProvider : ISampleProvider
+    {
+        private readonly ISampleProvider _source;
+        private readonly int _inputChannels;
+        private float[] _sourceBuffer = [];
+
+        public StereoChannelSampleProvider(ISampleProvider source)
+        {
+            _source = source;
+            _inputChannels = source.WaveFormat.Channels;
+            if (_inputChannels < 1)
+            {
+                throw new ArgumentException("The Windows output device has no audio channels.", nameof(source));
+            }
+
+            WaveFormat = WaveFormat.CreateIeeeFloatWaveFormat(source.WaveFormat.SampleRate, ProtocolConstants.ChannelCount);
+        }
+
+        public WaveFormat WaveFormat { get; }
+
+        public int Read(float[] buffer, int offset, int count)
+        {
+            var requestedFrames = count / ProtocolConstants.ChannelCount;
+            if (requestedFrames == 0)
+            {
+                return 0;
+            }
+
+            var requestedSourceSamples = requestedFrames * _inputChannels;
+            if (_sourceBuffer.Length < requestedSourceSamples)
+            {
+                _sourceBuffer = new float[requestedSourceSamples];
+            }
+
+            var sourceSamplesRead = _source.Read(_sourceBuffer, 0, requestedSourceSamples);
+            var framesRead = sourceSamplesRead / _inputChannels;
+            for (var frame = 0; frame < framesRead; frame++)
+            {
+                var sourceOffset = frame * _inputChannels;
+                var destinationOffset = offset + (frame * ProtocolConstants.ChannelCount);
+                var left = _sourceBuffer[sourceOffset];
+                var right = _inputChannels > 1 ? _sourceBuffer[sourceOffset + 1] : left;
+                buffer[destinationOffset] = left;
+                buffer[destinationOffset + 1] = right;
+            }
+
+            return framesRead * ProtocolConstants.ChannelCount;
+        }
+    }
 }
