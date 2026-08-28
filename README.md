@@ -12,7 +12,7 @@ This repository contains:
 
 ## Current verification status
 
-The Windows solution builds with zero warnings and all six automated tests pass, including a live local UDP pairing/audio test and a byte-for-byte Swift/C# protocol vector. The iOS project and tests are ready for XcodeGen, but an iPhone build cannot be compiled on Windows; the included macOS GitHub Actions workflow performs that build and packages an unsigned IPA. Real iPhone testing is still required before calling the app production-ready.
+The Windows solution builds with zero warnings and all six automated tests pass, including a live local UDP pairing/audio test and a byte-for-byte Swift/C# protocol vector. GitHub's macOS runner also passes the Swift unit tests, compiles the ARM64 device app, and packages a structurally verified unsigned IPA. Real iPhone installation and audio-route testing are still required before calling the app production-ready.
 
 ## Expected latency on your Wi-Fi
 
@@ -77,3 +77,4 @@ The detailed packet contract is in [protocol/README.md](protocol/README.md).
 ## Premium roadmap
 
 A more polished second version is feasible. High-value upgrades are automatic discovery and QR pairing, adaptive jitter buffering, Opus compression, authenticated encryption, clock-drift correction, interruption/reconnect handling, selectable Windows output devices, and measured round-trip latency. A separate browser extension or compatible video player could delay video to match audio; Netflix cannot be universally synchronized from an ordinary sender app.
+
