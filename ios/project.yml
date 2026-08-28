@@ -25,6 +25,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.audiobridge.receiver
         PRODUCT_NAME: AudioBridge
+        PRODUCT_MODULE_NAME: AudioBridgeReceiver
         INFOPLIST_FILE: AudioBridgeReceiver/Info.plist
         GENERATE_INFOPLIST_FILE: NO
         CODE_SIGN_STYLE: Automatic
