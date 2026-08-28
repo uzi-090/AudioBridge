@@ -4,8 +4,12 @@ import Foundation
 final class AudioSessionController {
     private let session = AVAudioSession.sharedInstance()
     private var routeObserver: NSObjectProtocol?
+    private var interruptionObserver: NSObjectProtocol?
+    private var mediaServicesResetObserver: NSObjectProtocol?
 
     var onRouteChanged: ((String) -> Void)?
+    var onInterruptionEnded: (() -> Void)?
+    var onMediaServicesReset: (() -> Void)?
 
     init() {
         routeObserver = NotificationCenter.default.addObserver(
@@ -16,11 +20,39 @@ final class AudioSessionController {
             guard let self else { return }
             self.onRouteChanged?(self.currentRouteName)
         }
+
+        interruptionObserver = NotificationCenter.default.addObserver(
+            forName: AVAudioSession.interruptionNotification,
+            object: session,
+            queue: .main
+        ) { [weak self] notification in
+            guard
+                let rawValue = notification.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt,
+                AVAudioSession.InterruptionType(rawValue: rawValue) == .ended
+            else {
+                return
+            }
+            self?.onInterruptionEnded?()
+        }
+
+        mediaServicesResetObserver = NotificationCenter.default.addObserver(
+            forName: AVAudioSession.mediaServicesWereResetNotification,
+            object: session,
+            queue: .main
+        ) { [weak self] _ in
+            self?.onMediaServicesReset?()
+        }
     }
 
     deinit {
         if let routeObserver {
             NotificationCenter.default.removeObserver(routeObserver)
+        }
+        if let interruptionObserver {
+            NotificationCenter.default.removeObserver(interruptionObserver)
+        }
+        if let mediaServicesResetObserver {
+            NotificationCenter.default.removeObserver(mediaServicesResetObserver)
         }
     }
 
@@ -47,4 +79,3 @@ final class AudioSessionController {
         Int((session.outputLatency + session.ioBufferDuration) * 1_000)
     }
 }
-
