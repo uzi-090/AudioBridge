@@ -63,16 +63,18 @@ final class JitterBuffer {
                 return packet
             }
 
-            let skipThreshold = targetDepth + 4
+            let skipThreshold = targetDepth + 2
             guard packets.count >= skipThreshold else { return nil }
-            droppedPackets += 1
-            expectedSequence = expected &+ 1
 
-            if let next = packets.removeValue(forKey: expected &+ 1) {
-                expectedSequence = expected &+ 2
-                return next
-            }
-            return nil
+            guard let nextSequence = packets.keys.min(by: {
+                ($0 &- expected) < ($1 &- expected)
+            }) else { return nil }
+
+            let skipped = nextSequence &- expected
+            guard skipped < UInt32.max / 2 else { return nil }
+            droppedPackets += UInt64(skipped)
+            expectedSequence = nextSequence &+ 1
+            return packets.removeValue(forKey: nextSequence)
         }
     }
 

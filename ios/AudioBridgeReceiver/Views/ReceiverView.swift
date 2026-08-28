@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct ReceiverView: View {
     @ObservedObject var viewModel: ReceiverViewModel
@@ -34,6 +35,19 @@ struct ReceiverView: View {
             .scrollDismissesKeyboard(.interactively)
         }
         .tint(AppTheme.accent)
+        .onAppear {
+            updateIdleTimer(for: viewModel.state)
+        }
+        .onChange(of: viewModel.state) { state in
+            updateIdleTimer(for: state)
+        }
+        .onDisappear {
+            UIApplication.shared.isIdleTimerDisabled = false
+        }
+    }
+
+    private func updateIdleTimer(for state: ReceiverConnectionState) {
+        UIApplication.shared.isIdleTimerDisabled = state.isConnected || state == .connecting
     }
 
     private var header: some View {
