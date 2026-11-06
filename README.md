@@ -21,7 +21,7 @@ Your approximately 33 Mbps down / 34 Mbps up connection is more than enough beca
 Reasonable first-version targets on a clean local network are:
 
 | Buffer mode | Likely end-to-end delay | Use |
-|---|---:|---|
+|---|---:|--|
 | Low Delay | 55–100 ms | Clean 5 GHz Wi-Fi |
 | Balanced | 75–130 ms | Recommended for videos |
 | Stable | 115–180 ms | Busy or weak Wi-Fi |
