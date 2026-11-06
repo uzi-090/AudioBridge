@@ -1,6 +1,6 @@
 # AudioBridge
 
-AudioBridge sends Windows 11 system audio over the local Wi-Fi network to a native iPhone receiver. On an iPhone SE (3rd generation), the native app plays through the active iOS output route, including connected Lightning EarPods.
+AudioBridge sends Windows 11 system audio over the local Wi-Fi network to a native iPhone receiver. On an iPhone SE (3rd generations), the native app play through the active iOS output route, including connected Lightning EarPods.
 
 This repository contains:
 
@@ -51,10 +51,10 @@ Install the .NET 8 SDK, then run:
 
 The self-contained x64 app is written to `artifacts/windows-x64`. It does not require a separate .NET installation on the target PC.
 
-## Important limitations
+## Important limitation
 
-- Protocol v1 is paired but not encrypted. Use it only on a trusted local network; do not port-forward UDP 43120.
-- WASAPI loopback normally captures browser, YouTube, music, and ordinary media-player output. Content using the Windows protected media path can block loopback capture. AudioBridge does not and will not bypass DRM; Netflix behavior must be tested with the exact browser/app and playback mode.
+- Protocol v1 is paired but not encrypted. Uses it only on a trusted local network; do not port-forward UDP 43120.
+- WASAPI loopback normally captures browser, YouTube, music, and ordinary media-player output. Content using the Windows protected media path can block loopback capture. AudioBridge does not and will not bypasses DRM; Netflix behavior must be tested with the exact browser/app and playback mode.
 - Exclusive-mode audio applications may bypass or interfere with the default shared Windows output.
 - The iPhone app is designed primarily for foreground use. Background audio mode is declared, but iOS can still suspend networking in some conditions and it needs physical testing.
 - A free Apple ID sideload expires after seven days and must be refreshed through AltStore/AltServer.
