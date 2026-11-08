@@ -1,6 +1,6 @@
 # AudioBridge
 
-AudioBridge sends Windows 11 system audio over the local Wi-Fi network to a native iPhone receiver. On an iPhone SE (3rd generations), the native app play through the active iOS output route, including connected Lightning EarPods.
+AudioBridge sends Windows 11 system audio over the local Wi-Fi network to a native iPhone receiver. On an iPhone SE (3rd generation), the native app plays through the active iOS output route, including connected Lightning EarPods.
 
 This repository contains:
 
@@ -41,6 +41,20 @@ These are engineering estimates, not measured promises. The iPhone screen report
 
 If the phone cannot connect, run `scripts/add-firewall-rule.ps1` from an Administrator PowerShell. It adds one inbound UDP 43120 rule for **Private** networks only.
 
+## Troubleshooting the first connection
+
+If the first test does not work, check the following before changing code or network settings:
+
+| Symptom | What to check |
+|---|---|
+| iPhone cannot connect | Both devices must be on the same local network. Avoid guest Wi-Fi and disable AP/client isolation on the router. Confirm the Windows sender address, UDP port `43120`, and current six-digit pairing code. |
+| Pairing times out | Allow **Local Network** access for the iPhone app, and allow the Windows sender through Windows Firewall on **Private** networks. If needed, use the included `scripts/add-firewall-rule.ps1` from an Administrator PowerShell. |
+| Connected, but no sound | Start with **Start test tone** in Windows. Confirm that the iPhone is using the intended output route and that volume is audible; then switch to **Stream system audio**. |
+| Crackling or interruptions | Try the **Stable** buffer preset and move both devices closer to a less congested Wi-Fi access point. Test with a simple audio source before investigating application-specific capture limitations. |
+| Some apps play sound, others do not | Test ordinary system/browser audio first. Protected-media playback may prevent WASAPI loopback capture, and AudioBridge cannot bypass DRM. |
+
+For safe testing, keep pairing and streaming on a trusted local network; protocol v1 is not encrypted.
+
 ## Build Windows locally
 
 Install the .NET 8 SDK, then run:
@@ -51,10 +65,10 @@ Install the .NET 8 SDK, then run:
 
 The self-contained x64 app is written to `artifacts/windows-x64`. It does not require a separate .NET installation on the target PC.
 
-## Important limitation
+## Important limitations
 
-- Protocol v1 is paired but not encrypted. Uses it only on a trusted local network; do not port-forward UDP 43120.
-- WASAPI loopback normally captures browser, YouTube, music, and ordinary media-player output. Content using the Windows protected media path can block loopback capture. AudioBridge does not and will not bypasses DRM; Netflix behavior must be tested with the exact browser/app and playback mode.
+- Protocol v1 is paired but not encrypted. Use it only on a trusted local network; do not port-forward UDP 43120.
+- WASAPI loopback normally captures browser, YouTube, music, and ordinary media-player output. Content using the Windows protected media path can block loopback capture. AudioBridge does not and will not bypass DRM; Netflix behavior must be tested with the exact browser/app and playback mode.
 - Exclusive-mode audio applications may bypass or interfere with the default shared Windows output.
 - The iPhone app is designed primarily for foreground use. Background audio mode is declared, but iOS can still suspend networking in some conditions and it needs physical testing.
 - A free Apple ID sideload expires after seven days and must be refreshed through AltStore/AltServer.
